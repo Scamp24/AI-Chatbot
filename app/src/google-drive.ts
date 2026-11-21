@@ -92,7 +92,15 @@ export class GoogleDriveConnector implements Connector {
 
   private async googleRequest(url: string, accessToken: string): Promise<unknown> {
     const response = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
-    if (!response.ok) throw new Error(`google_api_request_failed_${response.status}`);
+    if (!response.ok) {
+      let reason = "unknown";
+      try {
+        const body = await response.json() as { error?: { status?: string; errors?: Array<{ reason?: string }> } };
+        reason = body.error?.errors?.[0]?.reason ?? body.error?.status ?? reason;
+      } catch { /* Keep the diagnostic generic if Google does not return JSON. */ }
+      const safeReason = reason.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64);
+      throw new Error(`google_api_request_failed_${response.status}_${safeReason}`);
+    }
     return response.json();
   }
 }

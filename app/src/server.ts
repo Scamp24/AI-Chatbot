@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleDriveConnector } from "./google-drive.js";
-import { FailClosedConnector, retrieveEvidence, synthesizeAnswer } from "./pipeline.js";
+import { FailClosedConnector, respondToSmallTalk, retrieveEvidence, synthesizeAnswer } from "./pipeline.js";
 
 const port = Number(process.env.PORT ?? 3000);
 const connector = new FailClosedConnector();
@@ -77,6 +77,13 @@ const server = createServer(async (request, response) => {
     const chunks: Buffer[] = [];
     for await (const chunk of request) chunks.push(Buffer.from(chunk));
     const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as Record<string, unknown>;
+    const smallTalk = respondToSmallTalk(body.question);
+    if (smallTalk) {
+      const output = json(200, { answer: smallTalk, rejectedLinks: [], sourceStatus: googleDrive.status });
+      response.writeHead(output.status, Object.fromEntries(output.headers));
+      response.end(await output.text());
+      return;
+    }
     const result = body.links === undefined
       ? { passages: await googleDrive.retrieveQuestion(typeof body.question === "string" ? body.question : ""), rejectedLinks: [] }
       : await retrieveEvidence({ connector, principal: googleDrive.principal ?? { id: "anonymous", tenantId: "unconfigured" }, question: body.question, links: body.links });

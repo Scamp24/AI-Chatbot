@@ -1,6 +1,14 @@
 import type { Answer, Connector, Principal, RetrievalResult } from "./domain.js";
 import { parseSourceUrl, validateQuestion } from "./validation.js";
 
+export function respondToSmallTalk(question: unknown): Answer | undefined {
+  if (typeof question !== "string") return undefined;
+  const normalized = question.trim().toLowerCase().replace(/[!?.,]+$/g, "");
+  if (!/^(hi|hello|hey|good morning|good afternoon|good evening|how are you|thanks|thank you)$/.test(normalized)) return undefined;
+  const text = normalized.startsWith("thank") ? "You're welcome. Ask me about the connected knowledge when you're ready." : "Hello. I'm ready to search the connected knowledge for you.";
+  return { text, citations: [], verified: false, caveat: "I will ground substantive answers in permission-verified source evidence." };
+}
+
 export async function retrieveEvidence(args: {
   connector: Connector;
   principal: Principal;

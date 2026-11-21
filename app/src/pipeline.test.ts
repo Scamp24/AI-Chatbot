@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { Connector, EvidencePassage } from "./domain.js";
-import { retrieveEvidence, synthesizeAnswer } from "./pipeline.js";
+import { respondToSmallTalk, retrieveEvidence, synthesizeAnswer } from "./pipeline.js";
+
+test("responds to basic greetings without pretending they are sourced facts", () => {
+  const answer = respondToSmallTalk("Hello!");
+  assert.ok(answer);
+  assert.match(answer.text, /Hello/i);
+  assert.equal(answer.verified, false);
+});
 
 test("rejects unsupported and insecure links", async () => {
   const connector: Connector = { async resolveAndRetrieve() { return []; } };
