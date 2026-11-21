@@ -81,7 +81,7 @@ const server = createServer(async (request, response) => {
       ? { passages: await googleDrive.retrieveQuestion(typeof body.question === "string" ? body.question : ""), rejectedLinks: [] }
       : await retrieveEvidence({ connector, principal: googleDrive.principal ?? { id: "anonymous", tenantId: "unconfigured" }, question: body.question, links: body.links });
     const answer = synthesizeAnswer(result);
-    const output = json(200, { answer, rejectedLinks: result.rejectedLinks });
+    const output = json(200, { answer, rejectedLinks: result.rejectedLinks, sourceStatus: googleDrive.status });
     response.writeHead(output.status, Object.fromEntries(output.headers));
     response.end(await output.text());
   } catch (error) {

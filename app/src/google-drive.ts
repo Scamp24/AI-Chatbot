@@ -11,12 +11,13 @@ type GoogleToken = { accessToken: string; refreshToken?: string; expiresAt: numb
 export class GoogleDriveConnector implements Connector {
   private readonly pending = new Map<string, OAuthState>();
   private token?: GoogleToken;
+  private lastError?: string;
 
   constructor(private readonly config: { clientId?: string | undefined; clientSecret?: string | undefined; redirectUri: string }) {}
 
   get configured(): boolean { return Boolean(this.config.clientId && this.config.clientSecret); }
   get status(): { configured: boolean; connected: boolean; email?: string } {
-    return { configured: this.configured, connected: Boolean(this.token), ...(this.token?.email ? { email: this.token.email } : {}) };
+    return { configured: this.configured, connected: Boolean(this.token), ...(this.token?.email ? { email: this.token.email } : {}), ...(this.lastError ? { error: this.lastError } : {}) };
   }
   get principal(): Principal | undefined { return this.token?.subject ? { id: this.token.subject, tenantId: "local-demo" } : undefined; }
 
@@ -63,8 +64,12 @@ export class GoogleDriveConnector implements Connector {
         const index = firstTerm ? lower.indexOf(firstTerm) : 0;
         passages.push({ source: { kind: "google-drive", url: file.webViewLink ?? `https://drive.google.com/open?id=${file.id}`, canonicalId: file.id }, documentId: file.id, title: file.name, location: "Google Drive content", text: text.slice(Math.max(0, index - 180), Math.max(0, index - 180) + 900).trim(), ...(file.modifiedTime ? { lastModified: file.modifiedTime } : {}), retrievedAt: new Date().toISOString() });
       }
+      delete this.lastError;
       return passages;
-    } catch { return []; }
+    } catch (error) {
+      this.lastError = error instanceof Error ? error.message : "google_retrieval_failed";
+      return [];
+    }
   }
 
   private async readFile(id: string, mimeType: string, accessToken: string): Promise<string> {
