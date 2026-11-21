@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admin · AI Chatbot</title>
     <style>
-      :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1d1d1f; background: #f5f5f7; }
+      :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1d1d1f; background: #f5f5f7; --page: #f5f5f7; --surface: #fff; --nav: #fbfbfd; --text: #1d1d1f; --muted: #6e6e73; --border: #e5e5e7; --selected: #e8f1ff; --selected-text: #0757b5; }
+      :root.dark { color-scheme: dark; --page: #090a0c; --surface: #1c1d21; --nav: #111216; --text: #f5f5f7; --muted: #a1a1a6; --border: #38393f; --selected: #1d3555; --selected-text: #8cbcff; }
       * { box-sizing: border-box; }
-      body { margin: 0; } header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 5vw; background: #fff; border-bottom: 1px solid #e5e5e7; }
-      a { color: inherit; text-decoration: none; } .brand { font-weight: 700; } .back { color: #6e6e73; font-size: .9rem; }
-      .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); } aside { padding: 2rem 1.25rem; border-right: 1px solid #e5e5e7; background: #fbfbfd; } aside p { color: #6e6e73; font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; } aside a { display: block; padding: .7rem .8rem; border-radius: 9px; background: #e8f1ff; color: #0757b5; font-weight: 600; }
-      main { width: min(900px, 100%); padding: clamp(2rem, 5vw, 4rem); } .eyebrow { color: #6e6e73; font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; } h1 { font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -.06em; margin: .65rem 0 1rem; } .lede { color: #6e6e73; max-width: 650px; line-height: 1.55; }
-      .notice { margin-top: 2rem; padding: 1rem 1.1rem; border-radius: 14px; background: #fff8e1; border: 1px solid #f0d98b; color: #5b4a00; line-height: 1.5; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin-top: 2rem; } .card { background: #fff; border: 1px solid #e5e5e7; border-radius: 18px; padding: 1.35rem; box-shadow: 0 12px 30px #1d1d1f08; } .card h2 { margin-top: 0; font-size: 1.1rem; } .muted { color: #6e6e73; line-height: 1.45; } .status { display: inline-flex; gap: .4rem; align-items: center; color: #6e6e73; font-size: .9rem; } .dot { width: 8px; height: 8px; border-radius: 50%; background: #9a9a9f; }
+      body { margin: 0; background: var(--page); color: var(--text); transition: background .25s ease, color .25s ease; } header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 5vw; background: var(--surface); border-bottom: 1px solid var(--border); }
+      a { color: inherit; text-decoration: none; } .brand { font-weight: 700; } .header-actions { display: flex; align-items: center; gap: 1rem; } .back { color: var(--muted); font-size: .9rem; } .theme-toggle { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: .45rem .75rem; font: inherit; font-size: .8rem; cursor: pointer; }
+      .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 64px); } aside { padding: 2rem 1.25rem; border-right: 1px solid var(--border); background: var(--nav); } aside p { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; } aside a { display: block; padding: .7rem .8rem; border-radius: 9px; background: var(--selected); color: var(--selected-text); font-weight: 600; }
+      main { width: min(900px, 100%); padding: clamp(2rem, 5vw, 4rem); } .eyebrow { color: var(--muted); font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; } h1 { font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -.06em; margin: .65rem 0 1rem; } .lede { color: var(--muted); max-width: 650px; line-height: 1.55; }
+      .notice { margin-top: 2rem; padding: 1rem 1.1rem; border-radius: 14px; background: #fff8e1; border: 1px solid #f0d98b; color: #5b4a00; line-height: 1.5; } :root.dark .notice { background: #3c3212; border-color: #806c22; color: #ffe38a; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin-top: 2rem; } .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.35rem; box-shadow: 0 12px 30px #00000012; } .card h2 { margin-top: 0; font-size: 1.1rem; } .muted { color: var(--muted); line-height: 1.45; } .status { display: inline-flex; gap: .4rem; align-items: center; color: var(--muted); font-size: .9rem; } .dot { width: 8px; height: 8px; border-radius: 50%; background: #9a9a9f; }
       button { border: 0; border-radius: 999px; padding: .75rem 1rem; font: inherit; font-weight: 650; background: #0071e3; color: #fff; cursor: pointer; } button:disabled { opacity: .6; cursor: not-allowed; } .secondary { background: #eef4fc; color: #0757b5; }
       @media (max-width: 700px) { .layout { display: block; } aside { border-right: 0; border-bottom: 1px solid #e5e5e7; padding: 1rem 1.25rem; } aside p { display: none; } }
     </style>
   </head>
   <body>
-    <header><a class="brand" href="/">AI Chatbot · Admin</a><a class="back" href="/">Back to chat</a></header>
+    <header><a class="brand" href="/">AI Chatbot · Admin</a><div class="header-actions"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch color theme">Dark mode</button><a class="back" href="/">Back to chat</a></div></header>
     <div class="layout">
       <aside><p>Workspace</p><a href="/admin">Knowledge & connectors</a></aside>
       <main>
@@ -32,5 +33,14 @@
         </section>
       </main>
     </div>
+    <script>
+      const themeToggle = document.querySelector('#theme-toggle');
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) document.documentElement.classList.add('dark');
+      const updateThemeLabel = () => { const isDark = document.documentElement.classList.contains('dark'); themeToggle.textContent = isDark ? 'Light mode' : 'Dark mode'; themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode'); };
+      themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); updateThemeLabel(); });
+      updateThemeLabel();
+    </script>
   </body>
 </html>
