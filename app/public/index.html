@@ -19,7 +19,7 @@
       .lede { color: var(--muted); font-size: 1.1rem; line-height: 1.55; max-width: 600px; }
       .card { margin-top: 2.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: clamp(1.25rem, 4vw, 2.25rem); box-shadow: 0 20px 50px #0000001a; backdrop-filter: blur(14px); }
       label { display: block; font-weight: 650; margin: 1.25rem 0 .5rem; }
-      textarea { width: 100%; border: 1px solid var(--field); border-radius: 12px; padding: .9rem; font: inherit; color: var(--text); background: var(--solid); min-height: 112px; resize: vertical; }
+      textarea { width: 100%; border: 1px solid var(--field); border-radius: 12px; padding: .9rem; font: inherit; color: var(--text); background: var(--solid); min-height: 64px; resize: vertical; }
       textarea:focus { outline: 3px solid #0071e333; border-color: #0071e3; }
       button { margin-top: 1.25rem; background: #0071e3; color: white; border: 0; border-radius: 999px; padding: .8rem 1.35rem; font: inherit; font-weight: 650; cursor: pointer; }
       button:hover { background: #0077ed; }
@@ -38,17 +38,14 @@
         <p class="lede">Bring a permitted SharePoint or Google Drive link. The assistant only answers from evidence it can verify.</p>
         <form id="ask-form">
           <label for="question">Question</label>
-          <textarea id="question" required minlength="3" maxlength="2000" placeholder="What does the policy say about retention?"></textarea>
-          <label for="links">Source links <small>(one HTTPS SharePoint or Google Drive URL per line)</small></label>
-          <textarea id="links" required placeholder="https://drive.google.com/file/d/example/view"></textarea>
-          <button id="submit" type="submit">Ask</button>
+          <textarea id="question" required minlength="3" maxlength="2000" rows="1" placeholder="Message the connected knowledge…"></textarea>
+          <small>Press Enter to send. Use Shift + Enter for a new line.</small>
         </form>
         <div id="result" role="status" hidden></div>
       </section>
     </main>
     <script>
       const form = document.querySelector('#ask-form');
-      const button = document.querySelector('#submit');
       const result = document.querySelector('#result');
       const themeToggle = document.querySelector('#theme-toggle');
       const savedTheme = localStorage.getItem('theme');
@@ -57,28 +54,25 @@
       const updateThemeLabel = () => { const isDark = document.documentElement.classList.contains('dark'); themeToggle.textContent = isDark ? 'Light mode' : 'Dark mode'; themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode'); };
       themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); updateThemeLabel(); });
       updateThemeLabel();
+      const question = document.querySelector('#question');
+      question.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); form.requestSubmit(); } });
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        button.disabled = true;
         result.hidden = false;
-        result.textContent = 'Checking sources…';
+        result.textContent = 'Searching connected knowledge…';
         try {
           const response = await fetch('/ask', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              question: document.querySelector('#question').value,
-              links: document.querySelector('#links').value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean),
-            }),
+            body: JSON.stringify({ question: question.value }),
           });
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || 'Request failed');
           const citations = data.answer.citations.map((citation) => `- ${citation.title} (${citation.documentId})`).join('\n');
-          result.textContent = `${data.answer.text}\n\n${data.answer.caveat || ''}${citations ? `\n\nCitations:\n${citations}` : ''}${data.rejectedLinks.length ? `\n\nRejected links:\n${data.rejectedLinks.join('\n')}` : ''}`;
+          result.textContent = `${data.answer.text}\n\n${data.answer.caveat || ''}${citations ? `\n\nCitations:\n${citations}` : ''}`;
         } catch (error) {
           result.textContent = error instanceof Error ? error.message : 'Request failed';
         } finally {
-          button.disabled = false;
         }
       });
     </script>

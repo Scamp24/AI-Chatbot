@@ -28,7 +28,7 @@
         <p class="lede">Manage approved source connections for your team. End-user permissions remain authoritative at retrieval time.</p>
         <div class="notice"><strong>Demo-only admin portal.</strong> Authentication and live connector configuration are not enabled in this local build. No passwords, refresh tokens, or client secrets are accepted here.</div>
         <section class="grid" aria-label="Connections">
-          <article class="card"><h2>Google Drive</h2><p class="muted">Connect using provider-hosted OAuth with delegated permissions and PKCE. The browser will never collect a Google password.</p><p class="status"><span class="dot"></span><span id="google-status">Not connected</span></p><br /><button class="secondary" disabled>Start secure OAuth</button></article>
+          <article class="card"><h2>Google Drive</h2><p class="muted">Connect using provider-hosted OAuth with delegated permissions and PKCE. The browser will never collect a Google password.</p><p class="status"><span class="dot"></span><span id="google-status">Checking status…</span></p><br /><a class="secondary" id="google-connect" href="/api/admin/google/start" style="display:inline-block; border-radius:999px; padding:.75rem 1rem; font-weight:650;">Checking…</a></article>
           <article class="card"><h2>SharePoint</h2><p class="muted">Microsoft Entra delegated access will be added after the identity and tenant model are approved.</p><p class="status"><span class="dot"></span>Not configured</p><br /><button class="secondary" disabled>Configure later</button></article>
         </section>
       </main>
@@ -41,6 +41,13 @@
       const updateThemeLabel = () => { const isDark = document.documentElement.classList.contains('dark'); themeToggle.textContent = isDark ? 'Light mode' : 'Dark mode'; themeToggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode'); };
       themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); updateThemeLabel(); });
       updateThemeLabel();
+      const googleStatus = document.querySelector('#google-status');
+      const googleConnect = document.querySelector('#google-connect');
+      fetch('/api/admin/google/status').then((response) => response.json()).then((data) => {
+        if (!data.configured) { googleStatus.textContent = 'OAuth not configured'; googleConnect.textContent = 'Configure server first'; googleConnect.removeAttribute('href'); googleConnect.setAttribute('aria-disabled', 'true'); googleConnect.style.opacity = '.55'; return; }
+        googleStatus.textContent = data.connected ? `Connected${data.email ? ` as ${data.email}` : ''}` : 'Not connected';
+        googleConnect.textContent = data.connected ? 'Reconnect securely' : 'Connect securely';
+      }).catch(() => { googleStatus.textContent = 'Status unavailable'; googleConnect.textContent = 'Try again later'; googleConnect.removeAttribute('href'); });
     </script>
   </body>
 </html>

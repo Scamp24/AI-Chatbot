@@ -27,20 +27,19 @@ export async function retrieveEvidence(args: {
 export function synthesizeAnswer(result: RetrievalResult): Answer {
   if (result.passages.length === 0) {
     return {
-      text: "I couldn't verify that from the sources you provided.",
+      text: "I couldn't verify that from the connected knowledge.",
       citations: [],
       verified: false,
-      caveat: "No permission-verified evidence was available. Check the link, your access, or provide a narrower question.",
+      caveat: "No permission-verified evidence was available. Check the admin connection or try a narrower question.",
     };
   }
 
-  // The model-backed synthesizer will replace this in a later slice. Until then,
-  // returning the evidence verbatim is safer than inventing a generated answer.
+  const excerpts = result.passages.slice(0, 3).map((passage) => `• ${passage.text}`).join("\n\n");
   return {
-    text: "Verified passages were found, but answer synthesis is not configured yet.",
+    text: `Relevant verified passages:\n\n${excerpts}`,
     citations: result.passages,
-    verified: false,
-    caveat: "The answer model is not configured; review the cited passages directly.",
+    verified: true,
+    caveat: "This demo shows retrieved evidence directly; generated answer synthesis is not configured.",
   };
 }
 

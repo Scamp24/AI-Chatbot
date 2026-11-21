@@ -32,5 +32,5 @@ test("keeps citations attached to verified passages", () => {
   };
   const answer = synthesizeAnswer({ passages: [passage], rejectedLinks: [] });
   assert.equal(answer.citations[0]?.documentId, "doc-1");
-  assert.equal(answer.verified, false);
+  assert.equal(answer.verified, true);
 });

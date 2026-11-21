@@ -19,3 +19,10 @@
 - **Status:** Approved.
 - **Decision:** The demo shows connection state and the next secure action without pretending that Google Drive is connected. The API returns explicit unconfigured states.
 - **Rationale:** A convincing fake connector would violate the project's trust and hallucination guardrails.
+
+## ADR-004: Admin-connected Google Drive retrieval
+
+- **Status:** Approved for local demo; production security approval pending.
+- **Decision:** The admin portal starts Google OAuth 2.0 Authorization Code with PKCE. The client chat accepts only a question; retrieval uses the currently connected delegated Google identity and performs an answer-time Drive search.
+- **Rationale:** Source setup belongs in the control plane, while end users should not have to paste links for an administrator-approved knowledge source. Answer-time retrieval preserves current Drive permissions for the connected identity.
+- **Constraints:** This demo stores tokens only in process memory and has no production admin authentication, multi-user tenant isolation, encrypted token store, revocation workflow, or model synthesis. It must not be exposed as a team service.

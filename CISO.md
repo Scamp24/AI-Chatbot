@@ -19,4 +19,4 @@ The admin portal is not production-approved until identity, tenant isolation, co
 
 ## Demo approval
 
-The current demo may show a non-functional OAuth setup state and explain the safe next step. It may not accept credentials or claim that Google Drive is connected.
+The current demo may show a non-functional OAuth setup state and explain the safe next step. A local OAuth test may use a delegated Google token held in process memory only; it must never log or return tokens. Client retrieval must use the delegated identity's Drive API permissions at answer time. This demo may not be exposed as a team service.
