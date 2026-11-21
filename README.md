@@ -19,11 +19,14 @@ The API validates supported links, asks the connector for permission-filtered ev
 ## Run
 
 ```text
+cd app
 npm install
 npm run build
 npm test
 npm start
 ```
+
+The application source, package manifest, and TypeScript configuration live under `app/`. The repository root contains project governance and documentation.
 
 ## Security boundary
 
