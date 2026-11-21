@@ -23,6 +23,12 @@ const server = createServer(async (request, response) => {
       response.end(html);
       return;
     }
+    if (request.method === "GET" && request.url === "/admin") {
+      const html = await readFile(join(appDirectory, "..", "public", "admin", "index.html"), "utf8");
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end(html);
+      return;
+    }
     if (request.method === "GET" && request.url === "/health") {
       response.writeHead(200, { "content-type": "application/json" });
       response.end(JSON.stringify({ ok: true }));
