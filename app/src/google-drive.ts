@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { Connector, EvidencePassage, Principal, SourceRef } from "./domain.js";
 
-const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
+const DRIVE_SCOPE = "openid email https://www.googleapis.com/auth/drive.readonly";
 const STATE_TTL_MS = 10 * 60 * 1000;
 const GOOGLE_DOC = "application/vnd.google-apps.document";
 const TEXT_TYPES = new Set(["text/plain", "text/markdown", "text/csv"]);
@@ -87,7 +87,7 @@ export class GoogleDriveConnector implements Connector {
 
   private async googleRequest(url: string, accessToken: string): Promise<unknown> {
     const response = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
-    if (!response.ok) throw new Error("google_api_request_failed");
+    if (!response.ok) throw new Error(`google_api_request_failed_${response.status}`);
     return response.json();
   }
 }
