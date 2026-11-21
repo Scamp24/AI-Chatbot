@@ -1,8 +1,12 @@
 import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { FailClosedConnector, retrieveEvidence, synthesizeAnswer } from "./pipeline.js";
 
 const port = Number(process.env.PORT ?? 3000);
 const connector = new FailClosedConnector();
+const appDirectory = fileURLToPath(new URL(".", import.meta.url));
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -13,6 +17,12 @@ function json(status: number, body: unknown): Response {
 
 const server = createServer(async (request, response) => {
   try {
+    if (request.method === "GET" && request.url === "/") {
+      const html = await readFile(join(appDirectory, "..", "public", "index.html"), "utf8");
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end(html);
+      return;
+    }
     if (request.method === "GET" && request.url === "/health") {
       response.writeHead(200, { "content-type": "application/json" });
       response.end(JSON.stringify({ ok: true }));

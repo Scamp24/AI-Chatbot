@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Chatbot</title>
+    <style>
+      :root { color-scheme: light; font-family: system-ui, sans-serif; }
+      body { margin: 0; background: #f4f7fb; color: #162033; }
+      main { max-width: 760px; margin: 4rem auto; padding: 0 1rem; }
+      .card { background: white; border: 1px solid #d9e0ea; border-radius: 16px; padding: 2rem; box-shadow: 0 12px 32px #14213d12; }
+      h1 { margin-top: 0; }
+      label { display: block; font-weight: 650; margin: 1rem 0 .4rem; }
+      textarea { box-sizing: border-box; width: 100%; border: 1px solid #b9c5d6; border-radius: 8px; padding: .75rem; font: inherit; min-height: 100px; resize: vertical; }
+      button { margin-top: 1rem; background: #2457d6; color: white; border: 0; border-radius: 8px; padding: .75rem 1.2rem; font: inherit; font-weight: 650; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: wait; }
+      #result { margin-top: 1.5rem; padding: 1rem; border-radius: 10px; background: #f6f8fc; white-space: pre-wrap; }
+      small { color: #59677d; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="card">
+        <h1>AI Chatbot</h1>
+        <p>Ask about permitted SharePoint or Google Drive sources. This demo fails closed when evidence is unavailable.</p>
+        <form id="ask-form">
+          <label for="question">Question</label>
+          <textarea id="question" required minlength="3" maxlength="2000" placeholder="What does the policy say about retention?"></textarea>
+          <label for="links">Source links <small>(one HTTPS SharePoint or Google Drive URL per line)</small></label>
+          <textarea id="links" required placeholder="https://drive.google.com/file/d/example/view"></textarea>
+          <button id="submit" type="submit">Ask</button>
+        </form>
+        <div id="result" role="status" hidden></div>
+      </section>
+    </main>
+    <script>
+      const form = document.querySelector('#ask-form');
+      const button = document.querySelector('#submit');
+      const result = document.querySelector('#result');
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        button.disabled = true;
+        result.hidden = false;
+        result.textContent = 'Checking sources…';
+        try {
+          const response = await fetch('/ask', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              question: document.querySelector('#question').value,
+              links: document.querySelector('#links').value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean),
+            }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Request failed');
+          const citations = data.answer.citations.map((citation) => `- ${citation.title} (${citation.documentId})`).join('\n');
+          result.textContent = `${data.answer.text}\n\n${data.answer.caveat || ''}${citations ? `\n\nCitations:\n${citations}` : ''}${data.rejectedLinks.length ? `\n\nRejected links:\n${data.rejectedLinks.join('\n')}` : ''}`;
+        } catch (error) {
+          result.textContent = error instanceof Error ? error.message : 'Request failed';
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
